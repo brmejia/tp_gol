@@ -22,15 +22,6 @@ function world = plot_world(world)
   Matplot(world.data, '081');
 endfunction
 
-function gol_events_handler(win, x, y, ibut)
-  mode(1);
-  if ibut==-1000 then return,end
-  [x,y]=xchange(x,y,'i2f');
-  x = round(x);
-  y = round(y);
-  xinfo(msprintf('Event code %d at mouse position is (%f,%f)',ibut,x,y))
-endfunction
-
 function [A] = toggleCell(x, y, A)
   if (A(x, y) == 0) then
     A(x, y) = 1;
@@ -39,10 +30,3 @@ function [A] = toggleCell(x, y, A)
   end
 endfunction
 
-function start_callback()
-  global world;
-
-  world.data = 10.*rand(world.rows, world.cols);
-  world = plot_world(world);
-
-endfunction

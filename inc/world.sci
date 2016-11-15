@@ -4,6 +4,7 @@ function world_init()
     'T_WORLD',
     'rows',
     'cols',
+    'speed',
     'data',
     'fig',
     'function',
@@ -13,6 +14,7 @@ function world_init()
 
   world.rows = 10;
   world.cols = 10;
+  world.speed = 1500; // miliseconds
   world.data = zeros(world.rows, world.cols);
   world.fig = '';
   world.function = '';
