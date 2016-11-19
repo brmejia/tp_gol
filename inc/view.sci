@@ -1,25 +1,29 @@
-function fig = fig_controls(fig)
-
-  huibutton=uicontrol(fig,"style","pushbutton");
-  huibutton.Position = [0 0 500 30]; // [x y w h]
-  huibutton.String = "Start";
-  huibutton.BackgroundColor=[0.9 0.9 0.9];
-  huibutton.Callback = "start_callback";
-endfunction
-
 function world = plot_world(world)
-  if isempty(world.fig)
-    fig = scf();
-    world.fig = fig_controls(fig);
+  if isempty(world.axes)
+    global Win;
+    frame_right = get('frame_right');
+    world.axes = newaxes(frame_right);
+
+    world.axes.tag = "plot";
+    world.axes.title.text            = "My Beautiful Plot";
+    world.axes.title.font_size       = 5;
+
+    // world.axes.x_label.text          = "X";
+    // world.axes.y_label.text          = "Y";
+    // world.axes.z_label.text          = "Z";
   end
 
-  scf(world.fig);
-// colormap_size = 25;
-// fig1 = scf(0); // Create/Set current figure
-// fig1.color_map = jetcolormap(colormap_size);
-// fig1.event_handler = 'gol_events_handler';
+  // axes = sca(world.axes);
+  // colormap_size = 25;
+  // fig1.color_map = jetcolormap(colormap_size);
+  // fig1.event_handler = 'gol_events_handler';
+
+  Win.fig.immediate_drawing = "off";
 
   Matplot(world.data, '081');
+
+  Win.fig.immediate_drawing     = "on";
+  // Win.fig.visible     = "on";
 endfunction
 
 function [A] = toggleCell(x, y, A)
