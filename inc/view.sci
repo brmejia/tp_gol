@@ -1,12 +1,19 @@
 function world = plot_world(world)
+  mode(0)
+  global Win;
   if isempty(world.axes)
-    global Win;
+    disp('================== NEW AXES ==================');
     frame_right = get('frame_right');
     world.axes = newaxes(frame_right);
 
-    world.axes.tag = "plot";
-    world.axes.title.text            = "My Beautiful Plot";
-    world.axes.title.font_size       = 5;
+    world.axes.tag             = "plot";
+    world.axes.title.text      = "";
+    world.axes.title.font_size = 5;
+    world.axes.isoview         = 'on';
+    world.axes.margins         = [.05 .05 .08 .05]; // [L R U D]
+
+    // High level properties
+    world.axes.auto_clear = 'on';
 
     // world.axes.x_label.text          = "X";
     // world.axes.y_label.text          = "Y";
@@ -19,11 +26,9 @@ function world = plot_world(world)
   // fig1.event_handler = 'gol_events_handler';
 
   Win.fig.immediate_drawing = "off";
-
   Matplot(world.data, '081');
+  Win.fig.immediate_drawing = "on";
 
-  Win.fig.immediate_drawing     = "on";
-  // Win.fig.visible     = "on";
 endfunction
 
 function [A] = toggleCell(x, y, A)

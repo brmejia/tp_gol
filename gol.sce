@@ -15,5 +15,5 @@ world_init();
 win_init();
 
 // fig1.event_handler_enable = "on" ;
-// //fig.event_handler_enable = "off" ; //suppress the event handler
+//fig.event_handler_enable = "off" ; //suppress the event handler
 
