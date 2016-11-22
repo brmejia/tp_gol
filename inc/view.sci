@@ -11,6 +11,7 @@ function world = plot_world(world)
     world.axes.title.font_size = 5;
     world.axes.isoview         = 'on';
     world.axes.margins         = [.05 .05 .08 .05]; // [L R U D]
+    world.axes.auto_ticks      = ['off' 'off' 'off']; // Se eliminan la numeración de los ejes.
 
     // High level properties
     world.axes.auto_clear = 'on';
