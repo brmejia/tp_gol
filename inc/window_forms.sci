@@ -89,6 +89,8 @@ function Win = win_left_frame_form(Win)
   input_cols.ForegroundColor = [1 0 0];
   input_cols.Callback = "cols_input_callback";
   input_cols.Tag = "input_cols";
+
+
 endfunction
 
 function Win = win_right_frame_form(Win)

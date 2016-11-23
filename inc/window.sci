@@ -65,9 +65,8 @@ function start_btn_callback()
 
   while world.state == 1,
     // @todo: Reemplazar este llamado aleatorio por la función del juego deseado
-    world.rows = world.rows - 1;
-    world.cols = world.cols + 1;
-    world_data_reset();
+    // execstr Ejecutar un string
+    world = world_data_reset(world);
     world.data = 10*rand(world.rows, world.cols);
     world = plot_world(world);
     sleep(world.speed);
@@ -79,7 +78,7 @@ function stop_btn_callback()
   global world;
   world.state = 0;
   win_update_buttons_state();
-  abort(); // Stop all callback's execution
+  abort; // Stop all callback's execution
 endfunction
 
 // This function is executed when the reset button is pressed
@@ -88,10 +87,9 @@ function reset_btn_callback()
   world.state = 0;
   win_update_buttons_state();
   // Se utilizan los valores por defecto del mundo
-  // world_set_default_values();
-  world_data_reset();
+  world = world_data_reset(world);
   world = plot_world(world);
-  abort(); // Stop all callback's execution
+  abort; // Stop all callback's execution
 endfunction
 
 // This function is executed when the speed input field change its value
@@ -118,7 +116,7 @@ function rows_input_callback()
   // Si el tamaño de la matriz cambia
   if (world.rows ~= new_rows)
     world.rows = new_rows; // Se actualiza el valor de rows
-    world_data_reset(); // Se reinicia el mundo
+    world = world_data_reset(world); // Se reinicia el mundo
     world = plot_world(world);
   end
 endfunction
@@ -135,16 +133,10 @@ function cols_input_callback()
   // Si el tamaño de la matriz cambia
   if (world.cols ~= new_cols)
     world.cols = new_cols; // Se actualiza el valor de cols
-    world_data_reset(); // Se reinicia el mundo
+    world = world_data_reset(world); // Se reinicia el mundo
     world = plot_world(world);
   end
 endfunction
-
-// function win_events_handler(win, x, y, ibut)
-//   mode(1);
-//   if ibut==-1000 then return,end
-//   xinfo(msprintf('Event code %d at mouse position is (%f,%f)',ibut,x,y))
-// endfunction
 
 // This function change the form components state based in  the world current state.
 function win_update_buttons_state()
