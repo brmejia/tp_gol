@@ -11,18 +11,16 @@ function Win = win_left_frame_form(Win)
   row_h = 0.025;
 
   // LEFT FRAME
-  frame_left = uicontrol('parent', Win.fig, "style", "frame", ...
-    "constraints", createConstraints("border", "left", [Win.frame_w, Win.frame_h]));
+  frame_left = uicontrol(Win.fig, "style", "frame", ...
+    "constraints", createConstraints("border", "left", [Win.frame_w, .5*Win.frame_h]));
   frame_left.BackgroundColor = [1 1 1];
   frame_left.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("Control Panel"), "center", "below_top");
   frame_left.HorizontalAlignment = 'center';
   frame_left.layout = "gridbag";
   frame_left.Tag = "frame_left";
 
-  label_w = 50;
-  popup_w = 150
   label_w = .4*max_w;
-  popup_w = floor(max_w - label_w)
+  popup_w = floor(max_w - label_w);
 
   // Plugins popup menu Label
   lb_popup_plugin = uicontrol(frame_left, "style","text", ...
@@ -116,7 +114,7 @@ endfunction
 function Win = win_right_frame_form(Win)
   global world;
   // RIGHT FRAME
-  frame_right = uicontrol('parent', Win.fig, "style", "frame", ...
+  frame_right = uicontrol(Win.fig, "style", "frame", ...
     "constraints", createConstraints("border", "center", [Win.plot_w, Win.plot_h]));
   frame_right.BackgroundColor = [1 1 1];
   frame_right.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("WORLD"), "center", "below_top");

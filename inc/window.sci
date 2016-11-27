@@ -27,13 +27,14 @@ function win_init()
   Win.width = 3*Win.margin_x + Win.frame_w + Win.plot_w;
   Win.height = 2*Win.margin_y + Win.frame_h;
 
-  Win.fig = scf();
-  // Win.fig.figure_position = [100 100]; //position in pixel of the graphic window on the screen
-  Win.fig.figure_name = gettext("Jeux de la Vie! =D");
+  Win.fig = figure(1000, 'visible', 'off');
+
+  Win.fig.figure_position = [330 100]; //position in pixel of the graphic window on the screen
+  Win.fig.figure_name = _("Jeux de la Vie!");
   Win.fig.axes_size = [Win.width Win.height];
   Win.fig.dockable = "off";
   Win.fig.default_axes = "off";
-  Win.fig.visible = "on";
+  // Win.fig.visible = "off";
   // Win.fig.auto_resize = 'off';
   // Win.fig.resize = 'off';
 
@@ -42,19 +43,37 @@ function win_init()
   Win.fig.toolbar = "none";
   Win.fig.menubar_visible = "off";
   Win.fig.menubar = "none";
-  Win.fig.infobar_visible = "off";
+  Win.fig.infobar_visible = "on";
 
-  Win.fig.layout = "border";
-  Win.fig.layout_options = createLayoutOptions("border", [10 10]);
-  // Win.fig.layout_options = createLayoutOptions("gridbag", 'padding', [50 50]);
+  Win.fig.layout          = "border";
+  Win.fig.layout_options  = createLayoutOptions("border", [10 10]);
+  Win.fig.background      = -2; // Always White
+  Win.fig.color_map       = jetcolormap(128);
 
   // Win.fig.event_handler = 'win_events_handler';
   Win.fig.event_handler_enable = "off" ; //suppress the event handler
 
   Win = win_left_frame_form(Win);
   Win = win_right_frame_form(Win);
+
+  a = gca();
+
+  frame_right = get('frame_right');
+  a.parent = frame_right;
+
+  a.tag             = "plot";
+  a.title.text      = "";
+  a.title.font_size = 5;
+  a.isoview         = 'on';
+  a.margins         = [.05 .05 .08 .05]; // [L R U D]
+  a.auto_ticks      = ['off' 'off' 'off']; // Se eliminan la numeración de los ejes.
+
+  // High level properties
+  a.auto_clear = 'on';
+
   // Se modifica el estado de los componentes del formulario
   win_update_buttons_state();
+  Win.fig.visible = "on";
 endfunction
 
 // This function is executed when the start button is pressed
@@ -67,6 +86,7 @@ function start_btn_callback()
     // Se carga el plugin
     exec(world.plugin.path);
 
+    // @todo: Inicializar el plugin únicamente cuando se inicia por primera vez.
     // Se inicializa el plugin
     // Se verifica si la función de init del plugin existe
     if isdef(world.plugin.info.init_function)
@@ -83,23 +103,30 @@ function start_btn_callback()
       world.state = 1;
       win_update_buttons_state();
 
+      count = 1;
       while world.state == 1,
         // Se ejecuta la función del plugin
-        execstr(plugin_command);
-        world = plot_world(world);
-        sleep(world.speed);
+        execstr(plugin_command, 'errcatch');
+        // Sólo se ejecuta el sleep si la duración es mayor que cero
+        if world.speed > 0
+          world = plot_world(world);
+          sleep(world.speed);
+        end
+        xinfo(msprintf('Iteration %d', count));
+        count = count + 1;
       end
+      world = plot_world(world);
       world.state = 0;
     else
       // Se muestra mensaje de alerta si la función del plugin no existe
-      msg = msprintf(gettext("Undefined function ''%s''."), world.plugin.info.main_function);
-      messagebox(msg, gettext("Popupmenu selection"), "info", "modal");
+      msg = msprintf(_("Undefined function ''%s''."), world.plugin.info.main_function);
+      messagebox(msg, _("Popupmenu selection"), "info", "modal");
       world.state = -1;
     end
   else
     // Se muestra mensaje de alerta si el archivo del plugin no existe
-    msg = msprintf(gettext("Error loading file ''%s''."), world.plugin.path);
-    messagebox(msg, gettext("Popupmenu selection"), "info", "modal");
+    msg = msprintf(_("Error loading file ''%s''."), world.plugin.path);
+    messagebox(msg, _("Popupmenu selection"), "info", "modal");
     world.state = -1;
   end
   // Se actualiza el estado del formulario al finalizar la ejecución.
@@ -111,6 +138,7 @@ function stop_btn_callback()
   global world;
   world.state = 0;
   win_update_buttons_state();
+  plot_world(world);
   abort; // Stop all callback's execution
 endfunction
 
@@ -130,7 +158,7 @@ function speed_input_callback()
   global world;
   this = gcbo;
   new_speed = strtod(this.string);
-  if ~isnum(this.string) | new_speed < 50
+  if ~isnum(this.string) | new_speed < 0
     new_speed = world.default_speed;
   end
   this.string = string(new_speed);

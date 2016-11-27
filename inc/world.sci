@@ -31,10 +31,10 @@ function world = world_init(world)
     'state',
   ])
 
-  world.default_rows     = 100;
-  world.default_cols     = 100;
-  world.default_speed    = 250; // miliseconds
-  world.default_colormap = graycolormap(25); // miliseconds
+  world.default_rows     = 90;
+  world.default_cols     = 90;
+  world.default_speed    = 100; // miliseconds
+  world.default_colormap = jetcolormap(25); // miliseconds
   world.axes             = '';
   world.plugin           = '';
   world.state            = -1; // Run 1
