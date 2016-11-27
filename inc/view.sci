@@ -15,19 +15,12 @@ function world = plot_world(world)
 
     // High level properties
     world.axes.auto_clear = 'on';
-
-    // world.axes.x_label.text          = "X";
-    // world.axes.y_label.text          = "Y";
-    // world.axes.z_label.text          = "Z";
   end
 
-  // axes = sca(world.axes);
-  // colormap_size = 25;
-  // fig1.color_map = jetcolormap(colormap_size);
   // fig1.event_handler = 'gol_events_handler';
 
   Win.fig.immediate_drawing = "off";
-  Matplot(world.data, '081');
+  Matplot(world.data, '022');
   Win.fig.immediate_drawing = "on";
 
 endfunction

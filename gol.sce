@@ -13,5 +13,5 @@ global world;
 global plugins;
 
 world = world_init(world);
-win_init();
 plugins = plugins_load_directory();
+win_init();

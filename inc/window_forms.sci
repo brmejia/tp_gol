@@ -1,27 +1,52 @@
 function Win = win_left_frame_form(Win)
-  mode(1);
+  mode(0);
   global world;
 
-  btn_height = 25;
-  btn_width = 125;
+  btn_h = 25;
+  max_w = Win.frame_w - 40;
   btn_bg_color = [.95 .95 .95];
 
-  label_height = 0.75*btn_height;
+  label_height = 0.75*btn_h;
 
-  row_grid_height = 0.01;
+  row_h = 0.025;
 
   // LEFT FRAME
   frame_left = uicontrol('parent', Win.fig, "style", "frame", ...
     "constraints", createConstraints("border", "left", [Win.frame_w, Win.frame_h]));
   frame_left.BackgroundColor = [1 1 1];
-  frame_left.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("Contrôle de FLux"), "center", "below_top");
+  frame_left.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("Control Panel"), "center", "below_top");
+  frame_left.HorizontalAlignment = 'center';
   frame_left.layout = "gridbag";
   frame_left.Tag = "frame_left";
 
+  label_w = 50;
+  popup_w = 150
+  label_w = .4*max_w;
+  popup_w = floor(max_w - label_w)
+
+  // Plugins popup menu Label
+  lb_popup_plugin = uicontrol(frame_left, "style","text", ...
+    'constraints', createConstraints("gridbag", [1 1 2 1], [1 row_h], 'none', 'upper_right', [0 10], [label_w btn_h]));
+  lb_popup_plugin.BackgroundColor = [1 1 1];
+  lb_popup_plugin.String = _('Plugin');
+
+  global plugins;
+  plugin_items = "";
+  for plugin = plugins
+    plugin_items = plugin_items+'|'+plugin.info.title;
+  end
+  // Plugins popup menu
+  popup_plugin = uicontrol(frame_left, "style","popupmenu", ...
+    'constraints', createConstraints("gridbag", [3 1 2 1], [1 row_h], 'none', 'upper_left', [0 10], [popup_w btn_h]));
+  popup_plugin.String = plugin_items;
+  popup_plugin.Callback = "popup_plugin_callback";
+  popup_plugin.Tag = "popup_plugin";
+
+
   // Start button
   btn_start = uicontrol(frame_left, "style","pushbutton", ...
-    'constraints', createConstraints("gridbag", [1 1 4 1], [2 row_grid_height], 'none', 'upper', [0 0], [2.15*btn_width 1.5*btn_height]));
-  btn_start.String = "Start";
+    'constraints', createConstraints("gridbag", [1 2 4 1], [1 row_h], 'none', 'upper', [0 0], [max_w 1.5*btn_h]));
+  btn_start.String = _("Start");
   btn_start.Relief = "groove";
   btn_start.BackgroundColor = btn_bg_color;
   btn_start.Callback = "start_btn_callback";
@@ -29,8 +54,8 @@ function Win = win_left_frame_form(Win)
 
   // Stop Button
   btn_stop = uicontrol(frame_left, "style","pushbutton", ...
-    'constraints', createConstraints("gridbag", [1 2 2 1], [.9 row_grid_height], 'none', 'upper', [0 0], [btn_width btn_height]));
-  btn_stop.String = "Stop";
+    'constraints', createConstraints("gridbag", [1 3 2 1], [1 row_h], 'none', 'upper', [0 0], [.5*max_w btn_h]));
+  btn_stop.String = _("Stop");
   btn_stop.Relief = "groove";
   btn_stop.BackgroundColor = btn_bg_color;
   btn_stop.Callback = "stop_btn_callback";
@@ -39,8 +64,8 @@ function Win = win_left_frame_form(Win)
 
   // Reset Button
   btn_reset = uicontrol(frame_left, "style","pushbutton", ...
-    'constraints', createConstraints("gridbag", [3 2 2 1], [.9 row_grid_height], 'none', 'upper', [0 0], [btn_width btn_height]));
-  btn_reset.String = "Reset";
+    'constraints', createConstraints("gridbag", [3 3 2 1], [1 row_h], 'none', 'upper', [0 0], [.5*max_w btn_h]));
+  btn_reset.String = _("Reset");
   btn_reset.Relief = "groove";
   btn_reset.BackgroundColor = btn_bg_color;
   btn_reset.Callback = "reset_btn_callback";
@@ -49,44 +74,39 @@ function Win = win_left_frame_form(Win)
 
   // Speed input Label
   lb_input_speed = uicontrol(frame_left, "style","text", ...
-    'constraints', createConstraints("gridbag", [1 3 1 1], [.25 row_grid_height], 'none', 'lower', [0 0], [0.8*btn_width label_height]));
-  lb_input_speed.String = 'Vitesse (ms)';
+    'constraints', createConstraints("gridbag", [1 4 2 1], [1 row_h], 'none', 'lower', [0 0], [0.5*max_w label_height]));
+  lb_input_speed.String = [_('Delay')+' (ms)'];
   lb_input_speed.BackgroundColor = [1 1 1];
 
   // Speed input
   input_speed = uicontrol(frame_left, "style","edit", ...
-    'constraints', createConstraints("gridbag", [1 4 1 1], [.25 1], 'none', 'upper', [0 0], [0.8*btn_width btn_height]));
+    'constraints', createConstraints("gridbag", [1 5 2 1], [1 1], 'none', 'upper', [0 0], [0.5*max_w btn_h]));
   input_speed.String = string(world.speed);
-  input_speed.ForegroundColor = [1 0 0];
   input_speed.Callback = "speed_input_callback";
   input_speed.Tag = "input_speed";
 
   // Rows input Label
   lb_input_rows = uicontrol(frame_left, "style","text", ...
-    'constraints', createConstraints("gridbag", [3 3 1 1], [.375 row_grid_height], 'none', 'upper', [0 0], [0.5*btn_width label_height]));
-  lb_input_rows.String = 'Files';
+    'constraints', createConstraints("gridbag", [3 4 1 1], [1 row_h], 'none', 'lower', [0 0], [0.25*max_w label_height]));
+  lb_input_rows.String = _('Rows');
   lb_input_rows.BackgroundColor = [1 1 1];
 
   // Rows input
   input_rows = uicontrol(frame_left, "style","edit", ...
-    'constraints', createConstraints("gridbag", [3 4 1 1], [.375 1], 'none', 'upper', [0 0], [0.5*btn_width btn_height]));
+    'constraints', createConstraints("gridbag", [3 5 1 1], [1 1], 'none', 'upper', [0 0], [0.25*max_w btn_h]));
   input_rows.String = string(world.rows);
-  input_rows.ForegroundColor = [1 0 0];
   input_rows.Callback = "rows_input_callback";
   input_rows.Tag = "input_rows";
 
-
   // Cols input Label
   lb_input_cols = uicontrol(frame_left, "style","text", ...
-    'constraints', createConstraints("gridbag", [4 3 1 1], [.375 row_grid_height], 'none', 'upper', [0 0], [0.5*btn_width label_height]));
-  lb_input_cols.String = 'Colons';
+    'constraints', createConstraints("gridbag", [4 4 1 1], [1 row_h], 'none', 'lower', [0 0], [0.25*max_w label_height]));
+  lb_input_cols.String = _('Columns');
   lb_input_cols.BackgroundColor = [1 1 1];
-
   // Cols input
   input_cols = uicontrol(frame_left, "style","edit", ...
-    'constraints', createConstraints("gridbag", [4 4 1 1], [.375 1], 'none', 'upper', [0 0], [0.5*btn_width btn_height]));
+    'constraints', createConstraints("gridbag", [4 5 1 1], [1 1], 'none', 'upper', [0 0], [0.25*max_w btn_h]));
   input_cols.String = string(world.cols);
-  input_cols.ForegroundColor = [1 0 0];
   input_cols.Callback = "cols_input_callback";
   input_cols.Tag = "input_cols";
 

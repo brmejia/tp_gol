@@ -60,17 +60,50 @@ endfunction
 // This function is executed when the start button is pressed
 function start_btn_callback()
   global world;
-  world.state = 1;
-  win_update_buttons_state();
+  global Win;
 
-  while world.state == 1,
-    // @todo: Reemplazar este llamado aleatorio por la función del juego deseado
-    // execstr Ejecutar un string
-    world = world_data_reset(world);
-    world.data = 10*rand(world.rows, world.cols);
-    world = plot_world(world);
-    sleep(world.speed);
+  // Se verifica si existe el archivo del plugin
+  if isfile(world.plugin.path)
+    // Se carga el plugin
+    exec(world.plugin.path);
+
+    // Se inicializa el plugin
+    // Se verifica si la función de init del plugin existe
+    if isdef(world.plugin.info.init_function)
+      // Plugin init
+      init_command = "[Win, world] = "+world.plugin.info.init_function+"(Win, world)";
+      execstr(init_command);
+    end
+
+    // Se verifica si la función principal del plugin existe
+    if isdef(world.plugin.info.main_function)
+      // Creación del string que contiene el comando a ejecutar.
+      plugin_command = "[world] = "+world.plugin.info.main_function+"(world)";
+      // Se cambia el estado del mundo a 1 (Running)
+      world.state = 1;
+      win_update_buttons_state();
+
+      while world.state == 1,
+        // Se ejecuta la función del plugin
+        execstr(plugin_command);
+        world = plot_world(world);
+        sleep(world.speed);
+      end
+      world.state = 0;
+    else
+      // Se muestra mensaje de alerta si la función del plugin no existe
+      msg = msprintf(gettext("Undefined function ''%s''."), world.plugin.info.main_function);
+      messagebox(msg, gettext("Popupmenu selection"), "info", "modal");
+      world.state = -1;
+    end
+  else
+    // Se muestra mensaje de alerta si el archivo del plugin no existe
+    msg = msprintf(gettext("Error loading file ''%s''."), world.plugin.path);
+    messagebox(msg, gettext("Popupmenu selection"), "info", "modal");
+    world.state = -1;
   end
+  // Se actualiza el estado del formulario al finalizar la ejecución.
+  win_update_buttons_state();
 endfunction
 
 // This function is executed when the stop button is pressed
@@ -138,32 +171,55 @@ function cols_input_callback()
   end
 endfunction
 
+function popup_plugin_callback()
+  global plugins
+  global world
+  popup_plugin = gcbo; // gcbo devuelve el objeto del formulario que disparó el evento
+  selected = get(popup_plugin, "Value");
+
+  world.plugin = plugins(selected);
+
+  // Se cambia el estado del world para que pueda ser iniciado
+  world.state = 0;
+  win_update_buttons_state();
+endfunction
+
 // This function change the form components state based in  the world current state.
 function win_update_buttons_state()
   global world;
 
-  btn_start   = get('btn_start');
-  btn_stop    = get('btn_stop');
-  btn_reset   = get('btn_reset');
-  input_speed = get('input_speed');
-  input_rows  = get('input_rows');
-  input_cols  = get('input_cols');
+  popup_plugin = get('popup_plugin');
+  btn_start    = get('btn_start');
+  btn_stop     = get('btn_stop');
+  btn_reset    = get('btn_reset');
+  input_speed  = get('input_speed');
+  input_rows   = get('input_rows');
+  input_cols   = get('input_cols');
 
-  if world.state == 0
-    btn_start.Enable   = 'on';
-    btn_stop.Enable    = 'off';
-    btn_reset.Enable   = 'on';
-    input_speed.Enable = 'on';
-    input_rows.Enable  = 'on';
-    input_cols.Enable  = 'on';
-  elseif world.state == 1
-    btn_start.Enable   = 'off';
-    btn_stop.Enable    = 'on';
-    btn_reset.Enable   = 'on';
-    input_speed.Enable = 'off';
-    input_rows.Enable  = 'off';
-    input_cols.Enable  = 'off';
-  elseif world.state == -1
+  if world.state == 0 //STOPED
+    popup_plugin.Enable = 'on';
+    btn_start.Enable    = 'on';
+    btn_stop.Enable     = 'off';
+    btn_reset.Enable    = 'on';
+    input_speed.Enable  = 'on';
+    input_rows.Enable   = 'on';
+    input_cols.Enable   = 'on';
+  elseif world.state == 1 // RUNNING
+    popup_plugin.Enable = 'off';
+    btn_start.Enable    = 'off';
+    btn_stop.Enable     = 'on';
+    btn_reset.Enable    = 'on';
+    input_speed.Enable  = 'off';
+    input_rows.Enable   = 'off';
+    input_cols.Enable   = 'off';
+  elseif world.state == -1 // UNSET
+    popup_plugin.Enable = 'on';
+    btn_start.Enable    = 'off';
+    btn_stop.Enable     = 'off';
+    btn_reset.Enable    = 'off';
+    input_speed.Enable  = 'off';
+    input_rows.Enable   = 'off';
+    input_cols.Enable   = 'off';
   end
 endfunction
 

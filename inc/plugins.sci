@@ -1,6 +1,6 @@
 function plugins = plugins_load_directory()
   mode(0);
-  plugins_dir = ROOT_DIR+'/plugins/*.sci';
+  plugins_dir = ROOT_DIR+'/plugins/*.plugin.sci';
   // Se listan los archivos que existen en el directorio de plugins
   plugin_files = ls(plugins_dir);
 
@@ -18,7 +18,16 @@ function plugins = plugins_load_directory()
     // Si el archivo del plugin contiene una lista plugin con la información básica
     // Se guarda la información del plugin.
     if isdef('plugin')
-      plugins($+1) = plugin;
+      // Se crea el nuevo plugin con la información del plugin y el path del archivo
+      new_plugin = tlist([
+        'GOL_PLUGIN',
+        'path',
+        'info'
+      ]);
+      new_plugin.path = plugin_file;
+      new_plugin.info = plugin;
+      // Se añade el objeto a la lista de plugins
+      plugins($+1) = new_plugin;
     end
   end
 endfunction

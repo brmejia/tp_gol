@@ -6,9 +6,10 @@ endfunction
 
 // This function sets the world properties whit their default values
 function world = world_set_default_values(world)
-  world.rows = world.default_rows;
-  world.cols = world.default_cols;
-  world.speed = world.default_speed; // miliseconds
+  world.rows     = world.default_rows;
+  world.cols     = world.default_cols;
+  world.speed    = world.default_speed; // miliseconds
+  world.colormap = world.default_colormap; // miliseconds
   // Se crea el array vacio data con el tamaño del mundo
   world = world_data_reset(world);
 endfunction
@@ -26,17 +27,19 @@ function world = world_init(world)
     'axes',
     'plugin',
     'colormap',
+    'default_colormap',
     'state',
   ])
 
-  world.default_rows = 100;
-  world.default_cols = 100;
-  world.default_speed = 250; // miliseconds
-  world.axes = '';
-  world.plugin = '';
-  world.state = 0;  // Run 1
-                    // Stop 0
-                    // reset -1
+  world.default_rows     = 100;
+  world.default_cols     = 100;
+  world.default_speed    = 250; // miliseconds
+  world.default_colormap = graycolormap(25); // miliseconds
+  world.axes             = '';
+  world.plugin           = '';
+  world.state            = -1; // Run 1
+                              // Stop 0
+                              // Unset -1
 
   // Se utilizan los valores por defecto del mundo
   world = world_set_default_values(world);
