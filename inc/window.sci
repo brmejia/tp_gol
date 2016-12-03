@@ -106,7 +106,12 @@ function start_btn_callback()
       count = 1;
       while world.state == 1,
         // Se ejecuta la función del plugin
-        execstr(plugin_command, 'errcatch');
+        if execstr(plugin_command, 'errcatch') ~= 0 then
+          // Se muestra mensaje de alerta cuando se produce un error en la ejecución
+          msg = msprintf(_("Execution error at step ''%d''."), count);
+          messagebox(msg, _("Error"), "info", "modal");
+          stop_btn_callback();
+        end
         // Sólo se ejecuta el sleep si la duración es mayor que cero
         if world.speed > 0
           world = plot_world(world);
@@ -120,13 +125,13 @@ function start_btn_callback()
     else
       // Se muestra mensaje de alerta si la función del plugin no existe
       msg = msprintf(_("Undefined function ''%s''."), world.plugin.info.main_function);
-      messagebox(msg, _("Popupmenu selection"), "info", "modal");
+      messagebox(msg, _("Plugin function error"), "info", "modal");
       world.state = -1;
     end
   else
     // Se muestra mensaje de alerta si el archivo del plugin no existe
     msg = msprintf(_("Error loading file ''%s''."), world.plugin.path);
-    messagebox(msg, _("Popupmenu selection"), "info", "modal");
+    messagebox(msg, _("Plugin file error"), "info", "modal");
     world.state = -1;
   end
   // Se actualiza el estado del formulario al finalizar la ejecución.

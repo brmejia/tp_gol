@@ -49,11 +49,11 @@ function world = ants_plugin_main(world)
   // Se guarda la posición actual cómo la posición vieja
   world.plugin.info.old_pos = world.plugin.info.pos;
   // Se restablece el valor de la posición donde estaba la hormiga antes de moverla
-  world.data(world.plugin.info.pos(1), world.plugin.info.pos(2)) = ~world.plugin.info.val
+  world.data(world.plugin.info.pos(1), world.plugin.info.pos(2)) = ~world.plugin.info.val;
   // Se calcula la nueva posición de la hormiga
   world.plugin.info.pos = (op*d) + world.plugin.info.pos;
   // Se allmacena el valor de la nueva posicíón
   world.plugin.info.val = world.data(world.plugin.info.pos(1), world.plugin.info.pos(2));
   // Se actualiza el color de la posición de la hormiga
-  world.data(world.plugin.info.pos(1), world.plugin.info.pos(2)) = 2
+  world.data(world.plugin.info.pos(1), world.plugin.info.pos(2)) = 2;
 endfunction
