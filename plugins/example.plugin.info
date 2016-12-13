@@ -1,0 +1,4 @@
+plugin = struct();
+plugin.name = 'name';
+plugin.title = _('Example Plugin');
+
