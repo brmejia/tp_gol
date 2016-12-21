@@ -1,6 +1,7 @@
 // This function clear the data array and creates a new one whit the new size
 function world = world_data_reset(world)
   clear world.data;
+  world.initialized = %f;
   world.data = zeros(world.rows, world.cols);
 endfunction
 
@@ -29,6 +30,7 @@ function world = world_init(world)
     'colormap',
     'default_colormap',
     'state',
+    'initialized',
   ])
 
   world.default_rows     = 90;
@@ -37,6 +39,7 @@ function world = world_init(world)
   world.default_colormap = jetcolormap(25); // miliseconds
   world.axes             = '';
   world.plugin           = '';
+  world.initialized      = %f;
   world.state            = -1; // Run 1
                               // Stop 0
                               // Unset -1

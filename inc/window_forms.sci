@@ -28,10 +28,10 @@ function Win = win_left_frame_form(Win)
   lb_popup_plugin.BackgroundColor = [1 1 1];
   lb_popup_plugin.String = _('Plugin');
 
-  global plugins;
+  global plugins_info;
   plugin_items = "";
-  for plugin = plugins
-    plugin_items = plugin_items+'|'+plugin.info.title;
+  for plugin = plugins_info
+    plugin_items = plugin_items+'|'+plugin.title;
   end
   // Plugins popup menu
   popup_plugin = uicontrol(frame_left, "style","popupmenu", ...
@@ -78,7 +78,7 @@ function Win = win_left_frame_form(Win)
 
   // Speed input
   input_speed = uicontrol(frame_left, "style","edit", ...
-    'constraints', createConstraints("gridbag", [1 5 2 1], [1 1], 'none', 'upper', [0 0], [0.5*max_w btn_h]));
+    'constraints', createConstraints("gridbag", [1 5 2 1], [1 row_h], 'none', 'upper', [0 0], [0.5*max_w btn_h]));
   input_speed.String = string(world.speed);
   input_speed.Callback = "speed_input_callback";
   input_speed.Tag = "input_speed";
@@ -91,7 +91,7 @@ function Win = win_left_frame_form(Win)
 
   // Rows input
   input_rows = uicontrol(frame_left, "style","edit", ...
-    'constraints', createConstraints("gridbag", [3 5 1 1], [1 1], 'none', 'upper', [0 0], [0.25*max_w btn_h]));
+    'constraints', createConstraints("gridbag", [3 5 1 1], [1 row_h], 'none', 'upper', [0 0], [0.25*max_w btn_h]));
   input_rows.String = string(world.rows);
   input_rows.Callback = "rows_input_callback";
   input_rows.Tag = "input_rows";
@@ -103,11 +103,19 @@ function Win = win_left_frame_form(Win)
   lb_input_cols.BackgroundColor = [1 1 1];
   // Cols input
   input_cols = uicontrol(frame_left, "style","edit", ...
-    'constraints', createConstraints("gridbag", [4 5 1 1], [1 1], 'none', 'upper', [0 0], [0.25*max_w btn_h]));
+    'constraints', createConstraints("gridbag", [4 5 1 1], [1 row_h], 'none', 'upper', [0 0], [0.25*max_w btn_h]));
   input_cols.String = string(world.cols);
   input_cols.Callback = "cols_input_callback";
   input_cols.Tag = "input_cols";
 
+  // PLUGIN FORM FRAME
+  frame_plugin = uicontrol(frame_left, "style", "frame", ...
+    'constraints', createConstraints("gridbag", [1 6 4 1], [1 1], 'none', 'upper', [0 0], [max_w 5*btn_h]));
+  frame_plugin.BackgroundColor = [1 1 0.3];
+  frame_plugin.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("Parameters"), "center", "below_top");
+  frame_plugin.HorizontalAlignment = 'center';
+  frame_plugin.layout = "gridbag";
+  frame_plugin.Tag = "frame_plugin";
 
 endfunction
 

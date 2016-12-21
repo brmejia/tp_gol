@@ -81,57 +81,48 @@ function start_btn_callback()
   global world;
   global Win;
 
-  // Se verifica si existe el archivo del plugin
-  if isfile(world.plugin.path)
-    // Se carga el plugin
-    exec(world.plugin.path);
+  // Se inicializa el plugin
+  // Se verifica si la función de init del plugin existe
+  if ~world.initialized type(world.plugin.init) == 13
+    // Plugin init
+    // init_command = "[Win, world] = "+world.plugin.init+"(Win, world)";
+    // execstr(init_command);
+    [Win, world] = world.plugin.init(Win, world)
+    world.initialized = %t;
+  end
 
-    // @todo: Inicializar el plugin únicamente cuando se inicia por primera vez.
-    // Se inicializa el plugin
-    // Se verifica si la función de init del plugin existe
-    if isdef(world.plugin.info.init_function)
-      // Plugin init
-      init_command = "[Win, world] = "+world.plugin.info.init_function+"(Win, world)";
-      execstr(init_command);
-    end
+  // Se verifica si la función principal del plugin existe
+  if type(world.plugin.main) == 13
+    [world] = world.plugin.main(world);
+    // Se cambia el estado del mundo a 1 (Running)
+    world.state = 1;
+    win_update_buttons_state();
 
-    // Se verifica si la función principal del plugin existe
-    if isdef(world.plugin.info.main_function)
-      // Creación del string que contiene el comando a ejecutar.
-      plugin_command = "[world] = "+world.plugin.info.main_function+"(world)";
-      // Se cambia el estado del mundo a 1 (Running)
-      world.state = 1;
-      win_update_buttons_state();
-
-      count = 1;
-      while world.state == 1,
-        // Se ejecuta la función del plugin
-        if execstr(plugin_command, 'errcatch') ~= 0 then
-          // Se muestra mensaje de alerta cuando se produce un error en la ejecución
-          msg = msprintf(_("Execution error at step ''%d''."), count);
-          messagebox(msg, _("Error"), "info", "modal");
-          stop_btn_callback();
-        end
-        // Sólo se ejecuta el sleep si la duración es mayor que cero
-        if world.speed > 0
-          world = plot_world(world);
-          sleep(world.speed);
-        end
-        xinfo(msprintf('Iteration %d', count));
-        count = count + 1;
+    count = 1;
+    while world.state == 1,
+      // Se ejecuta la función del plugin
+      try
+        [world] = world.plugin.main(world)
+      catch
+        // Se muestra mensaje de alerta cuando se produce un error en la ejecución
+        msg = msprintf(_("Execution error at step ''%d''."), count);
+        messagebox(msg, _("Error"), "info", "modal");
+        stop_btn_callback();
       end
-      world = plot_world(world);
-      world.state = 0;
-    else
-      // Se muestra mensaje de alerta si la función del plugin no existe
-      msg = msprintf(_("Undefined function ''%s''."), world.plugin.info.main_function);
-      messagebox(msg, _("Plugin function error"), "info", "modal");
-      world.state = -1;
+      // Sólo se ejecuta el sleep si la duración es mayor que cero
+      if world.speed > 0
+        world = plot_world(world);
+        sleep(world.speed);
+      end
+      xinfo(msprintf('Iteration %d', count));
+      count = count + 1;
     end
+    world = plot_world(world);
+    world.state = 0;
   else
-    // Se muestra mensaje de alerta si el archivo del plugin no existe
-    msg = msprintf(_("Error loading file ''%s''."), world.plugin.path);
-    messagebox(msg, _("Plugin file error"), "info", "modal");
+    // Se muestra mensaje de alerta si la función del plugin no existe
+    msg = msprintf(_("Undefined function ''%s''."), world.plugin.main);
+    messagebox(msg, _("Plugin function error"), "info", "modal");
     world.state = -1;
   end
   // Se actualiza el estado del formulario al finalizar la ejecución.
@@ -205,12 +196,18 @@ function cols_input_callback()
 endfunction
 
 function popup_plugin_callback()
-  global plugins
+  global plugins_info
   global world
   popup_plugin = gcbo; // gcbo devuelve el objeto del formulario que disparó el evento
   selected = get(popup_plugin, "Value");
 
-  world.plugin = plugins(selected);
+  world.plugin = plugins_load_plugin(plugins_info(selected));
+
+  // Se verifica si la función de init del plugin existe
+  if type(world.plugin.form) == 13
+    frame_plugin = get('frame_plugin');
+    frame_plugin = world.plugin.form(frame_plugin, world)
+  end
 
   // Se cambia el estado del world para que pueda ser iniciado
   world.state = 0;
