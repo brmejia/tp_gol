@@ -50,7 +50,7 @@ function win_init()
   Win.fig.background      = -2; // Always White
   Win.fig.color_map       = jetcolormap(128);
 
-  // Win.fig.event_handler = 'win_events_handler';
+  // Win.fig.event_handler = 'my_eventhandler';
   Win.fig.event_handler_enable = "off" ; //suppress the event handler
 
   Win = win_left_frame_form(Win);
@@ -81,49 +81,40 @@ function start_btn_callback()
   global world;
   global Win;
 
-  // Se inicializa el plugin
-  // Se verifica si la función de init del plugin existe
-  if ~world.initialized type(world.plugin.init) == 13
-    // Plugin init
-    // init_command = "[Win, world] = "+world.plugin.init+"(Win, world)";
-    // execstr(init_command);
-    [Win, world] = world.plugin.init(Win, world)
-    world.initialized = %t;
-  end
+  if world.initialized
+    // Se verifica si la función principal del plugin existe
+    if type(world.plugin.main) == 13
+      [world] = world.plugin.main(world);
+      // Se cambia el estado del mundo a 1 (Running)
+      world.state = 1;
+      win_update_buttons_state();
 
-  // Se verifica si la función principal del plugin existe
-  if type(world.plugin.main) == 13
-    [world] = world.plugin.main(world);
-    // Se cambia el estado del mundo a 1 (Running)
-    world.state = 1;
-    win_update_buttons_state();
-
-    count = 1;
-    while world.state == 1,
-      // Se ejecuta la función del plugin
-      try
-        [world] = world.plugin.main(world)
-      catch
-        // Se muestra mensaje de alerta cuando se produce un error en la ejecución
-        msg = msprintf(_("Execution error at step ''%d''."), count);
-        messagebox(msg, _("Error"), "info", "modal");
-        stop_btn_callback();
+      while world.state == 1,
+        // Se ejecuta la función del plugin
+        try
+          [world] = world.plugin.main(world)
+        catch
+          // Se muestra mensaje de alerta cuando se produce un error en la ejecución
+          msg = msprintf(_("Execution error at step ''%d''."), world.context.step);
+          messagebox(msg, _("Error"), "info", "modal");
+          stop_btn_callback();
+        end
+        // Sólo se ejecuta el sleep si la duración es mayor que cero
+        if world.speed > 0
+          world = plot_world(world);
+          sleep(world.speed);
+        end
+        xinfo(msprintf('Iteration %d', world.context.step));
+        world.context.step = world.context.step + 1;
       end
-      // Sólo se ejecuta el sleep si la duración es mayor que cero
-      if world.speed > 0
-        world = plot_world(world);
-        sleep(world.speed);
-      end
-      xinfo(msprintf('Iteration %d', count));
-      count = count + 1;
+      world = plot_world(world);
+      world.state = 0;
+    else
+      // Se muestra mensaje de alerta si la función del plugin no existe
+      msg = msprintf(_("Undefined function ''%s''."), world.plugin.main);
+      messagebox(msg, _("Plugin function error"), "info", "modal");
+      world.state = -1;
     end
-    world = plot_world(world);
-    world.state = 0;
-  else
-    // Se muestra mensaje de alerta si la función del plugin no existe
-    msg = msprintf(_("Undefined function ''%s''."), world.plugin.main);
-    messagebox(msg, _("Plugin function error"), "info", "modal");
-    world.state = -1;
   end
   // Se actualiza el estado del formulario al finalizar la ejecución.
   win_update_buttons_state();
@@ -145,6 +136,8 @@ function reset_btn_callback()
   win_update_buttons_state();
   // Se utilizan los valores por defecto del mundo
   world = world_data_reset(world);
+  // On initialise le plugin
+  world = world_init_plugin(world);
   world = plot_world(world);
   abort; // Stop all callback's execution
 endfunction
@@ -203,13 +196,18 @@ function popup_plugin_callback()
 
   world.plugin = plugins_load_plugin(plugins_info(selected));
 
-  // Se verifica si la función de init del plugin existe
+  world.initialized = %f;
+  // On initialise le plugin
+  world = world_init_plugin(world);
+  world = plot_world(world);
+
+  // On vérifie si la fonction qui crée le formulaire du plugin existe
   if type(world.plugin.form) == 13
     frame_plugin = get('frame_plugin');
     frame_plugin = world.plugin.form(frame_plugin, world)
   end
 
-  // Se cambia el estado del world para que pueda ser iniciado
+  // On change le statu du monde
   world.state = 0;
   win_update_buttons_state();
 endfunction
@@ -225,6 +223,7 @@ function win_update_buttons_state()
   input_speed  = get('input_speed');
   input_rows   = get('input_rows');
   input_cols   = get('input_cols');
+  frame_right   = get('frame_right');
 
   if world.state == 0 //STOPED
     popup_plugin.Enable = 'on';
@@ -234,6 +233,7 @@ function win_update_buttons_state()
     input_speed.Enable  = 'on';
     input_rows.Enable   = 'on';
     input_cols.Enable   = 'on';
+    frame_right.Enable   = 'on';
   elseif world.state == 1 // RUNNING
     popup_plugin.Enable = 'off';
     btn_start.Enable    = 'off';
@@ -242,6 +242,7 @@ function win_update_buttons_state()
     input_speed.Enable  = 'off';
     input_rows.Enable   = 'off';
     input_cols.Enable   = 'off';
+    frame_right.Enable   = 'off';
   elseif world.state == -1 // UNSET
     popup_plugin.Enable = 'on';
     btn_start.Enable    = 'off';
@@ -250,6 +251,7 @@ function win_update_buttons_state()
     input_speed.Enable  = 'off';
     input_rows.Enable   = 'off';
     input_cols.Enable   = 'off';
+    frame_right.Enable   = 'off';
   end
-endfunction
 
+endfunction
