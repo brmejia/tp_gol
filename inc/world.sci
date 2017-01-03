@@ -37,7 +37,7 @@ function world = world_init(world)
 
   world.default_rows     = 90;
   world.default_cols     = 90;
-  world.default_speed    = 1; // miliseconds
+  world.default_speed    = 500; // miliseconds
   world.default_colormap = jetcolormap(25); // miliseconds
   world.axes             = '';
   world.plugin           = '';

@@ -202,9 +202,11 @@ function popup_plugin_callback()
   world = plot_world(world);
 
   // On vérifie si la fonction qui crée le formulaire du plugin existe
-  if type(world.plugin.form) == 13
-    frame_plugin = get('frame_plugin');
-    frame_plugin = world.plugin.form(frame_plugin, world)
+  try
+    if type(world.plugin.form) == 13
+      frame_plugin = get('frame_plugin');
+      frame_plugin = world.plugin.form(frame_plugin, world)
+    end
   end
 
   // On change le statu du monde
@@ -254,4 +256,16 @@ function win_update_buttons_state()
     frame_right.Enable   = 'off';
   end
 
+  win_update_buttons_value()
+endfunction
+
+function win_update_buttons_value()
+  global world;
+  input_speed  = get('input_speed');
+  input_rows   = get('input_rows');
+  input_cols   = get('input_cols');
+
+  input_speed.String = string(world.speed);
+  input_rows.String = string(world.rows);
+  input_cols.String = string(world.cols);
 endfunction

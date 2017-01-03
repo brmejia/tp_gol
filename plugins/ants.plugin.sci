@@ -15,22 +15,22 @@ endfunction
 
 function ants_update_colormap(world)
   n = 1;
-  colormap = [.85 .85 .85];
+  colormap = [.9 .9 .9];
   if ~isempty(world.context.ants)
     n = length(world.context.ants);
   end
   global Win;
   Win.fig.color_map = [colormap; hsvcolormap(n)];
-  disp(Win.fig.color_map);
 endfunction
 
 function [Win, world] = ants_plugin_init(Win, world)
   world.data = zeros(world.rows, world.cols);
+  world.speed = 1;
+  world.context.num_ants = 1;
   world.context.ants = [];
 
-  num_ants = 3;
   // @TODO: Remplacer le nombre de fourmis avec un champ de texte
-  for i = 1:num_ants
+  for i = 1:world.context.num_ants
     // grand("setsd",getdate("s"));
     rand_x = grand(1, "prm", (1/4)*size(world.data, 1):(3/4)*size(world.data, 1));
     rand_y = grand(1, "prm", (1/4)*size(world.data, 2):(3/4)*size(world.data, 2));
