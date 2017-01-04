@@ -110,9 +110,9 @@ function Win = win_left_frame_form(Win)
 
   // PLUGIN FORM FRAME
   frame_plugin = uicontrol(frame_left, "style", "frame", ...
-    'constraints', createConstraints("gridbag", [1 6 4 1], [1 1], 'none', 'upper', [0 0], [max_w 5*btn_h]));
-  frame_plugin.BackgroundColor = [1 1 0.3];
-  frame_plugin.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("Parameters"), "center", "below_top");
+    'constraints', createConstraints("gridbag", [1 6 4 1], [1 1], 'horizontal', 'upper', [0 0]));
+  frame_plugin.BackgroundColor = [1 1 1];
+  frame_plugin.Border = createBorder("titled", createBorder("line", "lightGray", 1), [_("Parameters")], "center", "below_top");
   frame_plugin.HorizontalAlignment = 'center';
   frame_plugin.layout = "gridbag";
   frame_plugin.Tag = "frame_plugin";
