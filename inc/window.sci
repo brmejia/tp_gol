@@ -219,10 +219,14 @@ function popup_plugin_callback()
     world = world_init_plugin(world);
     world = plot_world(world);
 
+    // On efface le formulaire du plugin précédant
+    frame_plugin = get('frame_plugin');
+    for child = frame_plugin.children
+      delete(child);
+    end
     // On vérifie si la fonction qui crée le formulaire du plugin existe
     try
       if type(world.plugin.form) == 13
-        frame_plugin = get('frame_plugin');
         frame_plugin = world.plugin.form(frame_plugin, world)
       end
     end
