@@ -1,5 +1,6 @@
 // Window Parameters initialization
 function win_init()
+  disp('==========> win_init');
   global Win;
   Win = tlist([
     'T_WINDOW',
@@ -78,24 +79,29 @@ endfunction
 
 // This function is executed when the start button is pressed
 function start_btn_callback()
+  disp('==========> start_btn_callback');
   global world;
   global Win;
+  global context;
+
+  // On initialise le plugin
+  world = world_init_plugin(world);
 
   if world.initialized
     // Se verifica si la función principal del plugin existe
     if type(world.plugin.main) == 13
-      [world] = world.plugin.main(world);
       // Se cambia el estado del mundo a 1 (Running)
       world.state = 1;
       win_update_buttons_state();
 
       while world.state == 1,
+        xinfo(msprintf('Iteration %d', context.step));
         // Se ejecuta la función del plugin
         try
           [world] = world.plugin.main(world)
         catch
           // Se muestra mensaje de alerta cuando se produce un error en la ejecución
-          msg = msprintf(_("Execution error at step ''%d''."), world.context.step);
+          msg = msprintf(_("Execution error at step ''%d''."), context.step);
           messagebox(msg, _("Error"), "info", "modal");
           stop_btn_callback();
         end
@@ -104,8 +110,7 @@ function start_btn_callback()
           world = plot_world(world);
           sleep(world.speed);
         end
-        xinfo(msprintf('Iteration %d', world.context.step));
-        world.context.step = world.context.step + 1;
+        context.step = context.step + 1;
       end
       world = plot_world(world);
       world.state = 0;
@@ -122,6 +127,7 @@ endfunction
 
 // This function is executed when the stop button is pressed
 function stop_btn_callback()
+  disp('==========> stop_btn_callback');
   global world;
   world.state = 0;
   win_update_buttons_state();
@@ -131,12 +137,14 @@ endfunction
 
 // This function is executed when the reset button is pressed
 function reset_btn_callback()
+  disp('==========> reset_btn_callback');
   global world;
   world.state = 0;
   win_update_buttons_state();
   // Se utilizan los valores por defecto del mundo
   world = world_data_reset(world);
   // On initialise le plugin
+  world.initialized = %f;
   world = world_init_plugin(world);
   world = plot_world(world);
   abort; // Stop all callback's execution
@@ -144,6 +152,7 @@ endfunction
 
 // This function is executed when the speed input field change its value
 function speed_input_callback()
+  disp('==========> speed_input_callback');
   global world;
   this = gcbo;
   new_speed = strtod(this.string);
@@ -156,10 +165,11 @@ endfunction
 
 // This function is executed when the rows input field change its value
 function rows_input_callback()
+  disp('==========> rows_input_callback');
   global world;
   this = gcbo;
   new_rows = strtod(this.string);
-  if ~isnum(this.string) | new_rows < 20 | new_rows > 2500
+  if ~isnum(this.string) | new_rows < 10 | new_rows > 2500
     new_rows = world.default_speed;
   end
   this.string = string(new_rows);
@@ -173,10 +183,11 @@ endfunction
 
 // This function is executed when the cols input field change its value
 function cols_input_callback()
+  disp('==========> cols_input_callback');
   global world;
   this = gcbo;
   new_cols = strtod(this.string);
-  if ~isnum(this.string) | new_cols < 20 | new_cols > 25000
+  if ~isnum(this.string) | new_cols < 10 | new_cols > 25000
     new_cols = world.default_speed;
   end
   this.string = string(new_cols);
@@ -189,29 +200,37 @@ function cols_input_callback()
 endfunction
 
 function popup_plugin_callback()
-  global plugins_info
-  global world
+  disp('==========> popup_plugin_callback');
+  global plugins_info;
+  global world;
+  global context;
   popup_plugin = gcbo; // gcbo devuelve el objeto del formulario que disparó el evento
   selected = get(popup_plugin, "Value");
+  // On valide si il y a eu un changement de plugin
+  if ~isfield(world.plugin, 'name') || plugins_info(selected).name ~= world.plugin.name
+    world.plugin = plugins_load_plugin(plugins_info(selected));
 
-  world.plugin = plugins_load_plugin(plugins_info(selected));
+    // On utilise les valeurs prédéfinis du monde
+    world = world_data_reset(world);
+    context = struct();
 
-  world.initialized = %f;
-  // On initialise le plugin
-  world = world_init_plugin(world);
-  world = plot_world(world);
+    world.initialized = %f;
+    // On initialise le plugin
+    world = world_init_plugin(world);
+    world = plot_world(world);
 
-  // On vérifie si la fonction qui crée le formulaire du plugin existe
-  try
-    if type(world.plugin.form) == 13
-      frame_plugin = get('frame_plugin');
-      frame_plugin = world.plugin.form(frame_plugin, world)
+    // On vérifie si la fonction qui crée le formulaire du plugin existe
+    try
+      if type(world.plugin.form) == 13
+        frame_plugin = get('frame_plugin');
+        frame_plugin = world.plugin.form(frame_plugin, world)
+      end
     end
-  end
 
-  // On change le statu du monde
-  world.state = 0;
-  win_update_buttons_state();
+    // On change le statu du monde
+    world.state = 0;
+    win_update_buttons_state();
+  end
 endfunction
 
 // This function change the form components state based in  the world current state.

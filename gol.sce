@@ -11,6 +11,9 @@ getd(plugins_dir);
 global Win;
 global world;
 global plugins_info;
+global context;
+
+context = struct();
 
 world = world_init(world);
 plugins_info = plugins_load_plugins_info();
