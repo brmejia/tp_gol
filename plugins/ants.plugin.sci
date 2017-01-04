@@ -3,7 +3,7 @@
 function [world, ant] = ants_new_ant(pos, world)
   global context;
   ant = struct();
-  // On enregistre la position de la fourmi
+  // On enregistre la position de la fourmi [row, column]
   ant.pos = pos;
 
   // On génère de manière pseudo-aléatoire la position précédente de la fourmi
@@ -15,6 +15,7 @@ function [world, ant] = ants_new_ant(pos, world)
   // On insert la fourmi dans le monde
   k = length(context.anthill()) + 1;
   context.anthill(k) = ant;
+  context.num_ants = length(context.anthill);
   // On place la fourmi dans la graphique
   world.data(ant.pos(1), ant.pos(2)) = k + 1;
 endfunction
@@ -47,9 +48,10 @@ function [Win, world] = ants_plugin_init(Win, world)
   global context;
 
   // Valeurs prédéfinis
-  world.speed = 1000;
-  world.rows  = 15;
-  world.cols  = 15;
+  world.speed = 1;
+  world.rows  = 80;
+  world.cols  = 80;
+  world = world_data_reset(world);
 
   if (~isfield(context, 'anthill'))
     context.anthill = [];
@@ -101,23 +103,31 @@ endfunction
 function parent = ants_plugin_form(parent, world)
   global context;
   // Nombre de fourmis input
-  if isempty(context.num_ants)
+  if ~isfield(context, 'num_ants') || isempty(context.num_ants)
     context.num_ants = 1;
   end
 
-  input_speed = uicontrol(parent, "style","edit", ...
-    'constraints', createConstraints("gridbag", [1 1 1 1], [1 1], 'none', 'upper', [0 0], [80, 20]));
-  input_speed.String = string(context.num_ants);
-  input_speed.Callback = "ants_num_ants_input_callback";
-  input_speed.Tag = "ants_num_ants";
+  // Speed input Label
+  lb_input_num_ants = uicontrol(parent, "style","text", ...
+    'constraints', createConstraints("gridbag", [1 1 1 1], [1 1], 'horizontal', 'upper_right', [0 0], [180 30]));
+  lb_input_num_ants.String = ['Nombre de fourmis'];
+  lb_input_num_ants.BackgroundColor = [1 1 1];
+
+  input_num_ants = uicontrol(parent, "style","edit", ...
+    'constraints', createConstraints("gridbag", [2 1 1 1], [1 1], 'horizontal', 'upper_left', [0 0], [50 30]));
+  input_num_ants.String = string(context.num_ants);
+  input_num_ants.Callback = "ants_num_ants_input_callback";
+  input_num_ants.Callback_Type = 10;
+  input_num_ants.Tag = "ants_num_ants";
 
   // Start button
-  btn_place_ant = uicontrol(parent, "style","pushbutton", ...
-    'constraints', createConstraints("gridbag", [2 1 1 1], [1 1], 'none', 'upper', [0 0], [100 25]));
-  btn_place_ant.String = _("Nouvelle fourmi");
-  btn_place_ant.Relief = "groove";
-  btn_place_ant.Callback = "ants_place_ant_btn_callback";
-  btn_place_ant.Tag = "btn_place_ant";
+  btn_new_ant = uicontrol(parent, "style","pushbutton", ...
+    'constraints', createConstraints("gridbag", [1 2 2 1], [1 1], 'horizontal', 'upper', [0 0], [200 40]));
+  btn_new_ant.String = _("Ajouter une nouvelle fourmi");
+  btn_new_ant.Relief = "groove";
+  btn_new_ant.BackgroundColor = [.95 .95 .95];
+  btn_new_ant.Callback = "ants_new_ant_btn_callback";
+  btn_new_ant.Tag = "btn_new_ant";
 
 endfunction
 
@@ -146,22 +156,21 @@ function ants_num_ants_input_callback()
   end
 endfunction
 
-// function ants_place_ant_btn_callback()
-//   global world;
-//   // On obtient la position du click
-//   [b,x,y]=xclick(); //get a point
-//   x = floor(x);
-//   y = floor(y);
+function ants_new_ant_btn_callback()
+  global world;
+  // On obtient la position du click
+  [b,column,row] = xclick(); //get a point
 
-//   // Si la position est dans la figure, on continue
-//   if (0 <= x && x <= world.cols) && (0 <= y && y <= world.rows)
-//     // On crée la nouvelle fourmi
-//     world.data()
-//   end
-//   // disp(xcoord);
-//   // disp(yxcoord);
-//   // disp(iwin);
-//   // disp(cbmenu);
-//   disp('btn_place_ant_callback');
-// endfunction
+  column = column - 0.5;
+  row    = row - 0.5;
+  // Si la position est dans la figure, on continue
+  if (0 <= column && column <= world.cols) && (0 <= row && row <= world.rows)
+    // On calcule la position de la fourmi
+    pos = ceil([world.rows - row, column]);
+    // On crée la nouvelle fourmi
+    [world, ant] = ants_new_ant(pos, world);
+    ants_update_colormap(world);
+    world = plot_world(world);
+  end
+endfunction
 
