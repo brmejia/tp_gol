@@ -1,4 +1,5 @@
 // @TODO: Créer une fonction pour mettre à jour le statu des champs du formulaire
+// @TODO: Créer un monde circulaire
 
 function [world, ant] = ants_new_ant(pos, world)
   global context;
@@ -78,22 +79,23 @@ function world = ants_plugin_main(world)
   global context;
   for k = 1:length(context.anthill)
     ant = context.anthill(k);
-    current_value   = ant.val;
 
     // Se calcula la distancia entre posiciones
     d = [1 -1].*(ant.pos - ant.old_pos);
     d = d($:-1:1);
     op = 0;
-    if current_value == 1
+    if ant.val >= 1
+      new_val = 0;
       op = -1;
     else
+      new_val = 1;
       op = 1;
     end
 
     // Se guarda la posición actual cómo la posición vieja
     ant.old_pos = ant.pos;
     // Se restablece el valor de la posición donde estaba la hormiga antes de moverla
-    world.data(ant.pos(1), ant.pos(2)) = ~ant.val;
+    world.data(ant.pos(1), ant.pos(2)) = new_val;
     // Se calcula la nueva posición de la hormiga
     ant.pos = (op*d) + ant.pos;
     // Se allmacena el valor de la nueva posicíón

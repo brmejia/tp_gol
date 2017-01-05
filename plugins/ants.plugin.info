@@ -1,4 +1,4 @@
 plugin = struct();
 plugin.name  = 'ants';
-plugin.title = _("Langtons ant");
+plugin.title = _("Langton''s Ant");
 
