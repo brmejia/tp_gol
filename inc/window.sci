@@ -100,7 +100,7 @@ function start_btn_callback()
         // Sólo se ejecuta el sleep si la duración es mayor que cero
         if world.speed > 0
           world = plot_world(world);
-          // sleep(world.speed);
+          sleep(world.speed);
         end
         context.step = context.step + 1;
       end
