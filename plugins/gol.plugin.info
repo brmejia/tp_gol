@@ -1,0 +1,3 @@
+plugin = struct();
+plugin.name  = 'gol';
+plugin.title = _("Jeu de la Vie");
