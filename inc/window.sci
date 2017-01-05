@@ -69,6 +69,8 @@ function start_btn_callback()
 
   // On initialise le plugin
   world = world_init_plugin(world);
+  global times;
+  times = zeros(11000, 1);
 
   if world.initialized
     // Se verifica si la función principal del plugin existe
@@ -81,8 +83,15 @@ function start_btn_callback()
         xinfo(msprintf('Iteration %d', context.step));
         // Se ejecuta la función del plugin
         try
+          tic();
           [world] = world.plugin.main(world);
+          times(context.step) = toc();
         catch
+          [str,n,line,func] = lasterror();
+          disp([str,n,line,func]);
+          error(n, str);
+          disp('[mean(times) stdev(times)]');
+          disp([mean(times) stdev(times)]);
           // Se muestra mensaje de alerta cuando se produce un error en la ejecución
           msg = msprintf(_("Execution error at step ''%d''."), context.step);
           messagebox(msg, _("Error"), "info", "modal");
@@ -91,7 +100,7 @@ function start_btn_callback()
         // Sólo se ejecuta el sleep si la duración es mayor que cero
         if world.speed > 0
           world = plot_world(world);
-          sleep(world.speed);
+          // sleep(world.speed);
         end
         context.step = context.step + 1;
       end
@@ -187,6 +196,7 @@ function popup_plugin_callback()
   global plugins_info;
   global world;
   global context;
+
   popup_plugin = gcbo; // gcbo devuelve el objeto del formulario que disparó el evento
   selected = get(popup_plugin, "Value");
   // On valide si il y a eu un changement de plugin
