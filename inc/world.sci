@@ -1,7 +1,7 @@
 // This function clear the data array and creates a new one whit the new size
 function world = world_data_reset(world)
   clear world.data;
-  world.data = zeros(world.rows, world.cols);
+  world.data = int16(zeros(world.rows, world.cols));
 endfunction
 
 // This function sets the world properties whit their default values

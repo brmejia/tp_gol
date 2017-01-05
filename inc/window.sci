@@ -81,7 +81,7 @@ function start_btn_callback()
         xinfo(msprintf('Iteration %d', context.step));
         // Se ejecuta la función del plugin
         try
-          [world] = world.plugin.main(world)
+          [world] = world.plugin.main(world);
         catch
           // Se muestra mensaje de alerta cuando se produce un error en la ejecución
           msg = msprintf(_("Execution error at step ''%d''."), context.step);
