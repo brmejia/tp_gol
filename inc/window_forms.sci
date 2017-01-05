@@ -118,13 +118,3 @@ function Win = win_left_frame_form(Win)
   frame_plugin.Tag = "frame_plugin";
 
 endfunction
-
-function Win = win_right_frame_form(Win)
-  global world;
-  // RIGHT FRAME
-  frame_right = uicontrol(Win.fig, "style", "frame", ...
-    "constraints", createConstraints("border", "center", [Win.plot_w, Win.plot_h]));
-  frame_right.BackgroundColor = [1 1 1];
-  frame_right.Border = createBorder("titled", createBorder("line", "lightGray", 1), _("WORLD"), "center", "below_top");
-  frame_right.Tag = "frame_right";
-endfunction

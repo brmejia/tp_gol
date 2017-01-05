@@ -2,22 +2,8 @@
 function win_init()
   disp('==========> win_init');
   global Win;
-  Win = tlist([
-    'T_WINDOW',
-    'fig',
-    'width',
-    'height',
-    'margin_x',
-    'margin_y',
-    'frame_w',
-    'frame_h',
-    'plot_w',
-    'plot_h',
-  ]);
+  Win = struct();
 
-  // Horizontal and vertical margin for elements
-  Win.margin_x = 25;
-  Win.margin_y = 25;
   // Frame width and height
   Win.frame_w  = 300;
   Win.frame_h  = 640;
@@ -25,18 +11,18 @@ function win_init()
   Win.plot_w   = 640;
   Win.plot_h   = 640;
   // defaultfont = "arial"; // Default Font
-  Win.width = 3*Win.margin_x + Win.frame_w + Win.plot_w;
-  Win.height = 2*Win.margin_y + Win.frame_h;
+  Win.width = Win.frame_w + Win.plot_w;
+  Win.height = Win.frame_h;
 
-  Win.fig = figure(1000, 'visible', 'off');
+  Win.fig = scf(1000);
 
-  Win.fig.figure_position = [330 100]; //position in pixel of the graphic window on the screen
-  Win.fig.figure_name = _("Jeux de la Vie!");
+  Win.fig.figure_position = [230 100]; //position in pixel of the graphic window on the screen
+  Win.fig.figure_name = _("Jeu de la Vie");
   Win.fig.axes_size = [Win.width Win.height];
   Win.fig.dockable = "off";
   Win.fig.default_axes = "off";
   // Win.fig.visible = "off";
-  // Win.fig.auto_resize = 'off';
+  // Win.fig.auto_resize = 'on';
   // Win.fig.resize = 'off';
 
   // Remove Scilab graphics menus & toolbar
@@ -51,22 +37,19 @@ function win_init()
   Win.fig.background      = -2; // Always White
   Win.fig.color_map       = jetcolormap(128);
 
-  // Win.fig.event_handler = 'my_eventhandler';
   Win.fig.event_handler_enable = "off" ; //suppress the event handler
 
   Win = win_left_frame_form(Win);
-  Win = win_right_frame_form(Win);
 
-  a = gca();
-
-  frame_right = get('frame_right');
-  a.parent = frame_right;
+  a = newaxes();
+  a_bound_w = Win.plot_w/Win.width
+  a.axes_bounds = [1-a_bound_w,0,a_bound_w,1];
 
   a.tag             = "plot";
   a.title.text      = "";
   a.title.font_size = 5;
   a.isoview         = 'on';
-  a.margins         = [.05 .05 .08 .05]; // [L R U D]
+  a.margins         = [.01 .01 .01 .01]; // [L R U D]
   a.auto_ticks      = ['off' 'off' 'off']; // Se eliminan la numeración de los ejes.
 
   // High level properties
@@ -210,11 +193,14 @@ function popup_plugin_callback()
   if ~isfield(world.plugin, 'name') || plugins_info(selected).name ~= world.plugin.name
     world.plugin = plugins_load_plugin(plugins_info(selected));
 
+    seteventhandler('');
     // On utilise les valeurs prédéfinis du monde
     world = world_data_reset(world);
     context = struct();
 
     world.initialized = %f;
+    // On établie les valeurs prédéfinis du monde
+    world = world_set_default_values(world);
     // On initialise le plugin
     world = world_init_plugin(world);
     world = plot_world(world);
@@ -278,6 +264,10 @@ function win_update_buttons_state()
     input_cols.Enable   = 'off';
     frame_right.Enable   = 'off';
   end
+  // On actualise le statu du formulaire du plugin
+  if isfield(world.plugin, 'form_state') && type(world.plugin.form_state) == 13
+    world.plugin.form_state(world);
+  end
 
   win_update_buttons_value()
 endfunction
@@ -291,4 +281,10 @@ function win_update_buttons_value()
   input_speed.String = string(world.speed);
   input_rows.String = string(world.rows);
   input_cols.String = string(world.cols);
+
+  // On actualise les valeurs du formulaire du plugin
+  if isfield(world.plugin, 'form_update') && type(world.plugin.form_update) == 13
+    world.plugin.form_update(world);
+  end
+
 endfunction

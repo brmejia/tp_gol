@@ -17,8 +17,8 @@ endfunction
 function world = world_init(world)
   world = struct();
 
-  world.default_rows     = 15;
-  world.default_cols     = 15;
+  world.default_rows     = 80;
+  world.default_cols     = 80;
   world.default_speed    = 500; // miliseconds
   world.default_colormap = jetcolormap(25); // miliseconds
   world.axes             = '';

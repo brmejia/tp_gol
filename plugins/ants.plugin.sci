@@ -3,6 +3,11 @@
 function [world, ant] = ants_new_ant(pos, world)
   global context;
   ant = struct();
+
+  if world.data(pos(1), pos(2)) > 1
+    return;
+  end
+
   // On enregistre la position de la fourmi [row, column]
   ant.pos = pos;
 
@@ -47,10 +52,12 @@ endfunction
 function [Win, world] = ants_plugin_init(Win, world)
   global context;
 
-  // Valeurs prédéfinis
+  fig = gcf();
+  fig.event_handler = 'ants_new_ant_btn_callback';
+  fig.event_handler_enable = "on" ;
+
+  // // Valeurs prédéfinis
   world.speed = 1;
-  world.rows  = 80;
-  world.cols  = 80;
   world = world_data_reset(world);
 
   if (~isfield(context, 'anthill'))
@@ -64,7 +71,6 @@ function [Win, world] = ants_plugin_init(Win, world)
   world = ants_populate_anthill(context.num_ants, world);
 
   ants_update_colormap(world)
-  // [world] = world.plugin.main(world);
   world = plot_world(world);
 endfunction
 
@@ -120,15 +126,29 @@ function parent = ants_plugin_form(parent, world)
   input_num_ants.Callback_Type = 10;
   input_num_ants.Tag = "ants_num_ants";
 
-  // Start button
-  btn_new_ant = uicontrol(parent, "style","pushbutton", ...
-    'constraints', createConstraints("gridbag", [1 2 2 1], [1 1], 'horizontal', 'upper', [0 0], [200 40]));
-  btn_new_ant.String = _("Ajouter une nouvelle fourmi");
-  btn_new_ant.Relief = "groove";
-  btn_new_ant.BackgroundColor = [.95 .95 .95];
-  btn_new_ant.Callback = "ants_new_ant_btn_callback";
-  btn_new_ant.Tag = "btn_new_ant";
+endfunction
 
+function ants_plugin_form_update(world)
+  global context;
+
+  if isfield(context, 'num_ants')
+    input_num_ants  = get('ants_num_ants');
+    input_num_ants.String = string(context.num_ants);
+  end
+endfunction
+
+function ants_plugin_form_state(world)
+  global context;
+
+  input_num_ants  = get('ants_num_ants');
+
+  if world.state == 0 //STOPED
+    input_num_ants.Enable = 'on';
+  elseif world.state == 1 // RUNNING
+    input_num_ants.Enable = 'off';
+  elseif world.state == -1 // UNSET
+    input_num_ants.Enable = 'off';
+  end
 endfunction
 
 function ants_num_ants_input_callback()
@@ -156,21 +176,33 @@ function ants_num_ants_input_callback()
   end
 endfunction
 
-function ants_new_ant_btn_callback()
+function ants_new_ant_btn_callback(win, column, row, ibut)
+  if ibut==-1000
+    return;
+  end
+
   global world;
-  // On obtient la position du click
-  [b,column,row] = xclick(); //get a point
+  [column, row]=xchange(column, row,'i2f');
 
   column = column - 0.5;
   row    = row - 0.5;
-  // Si la position est dans la figure, on continue
-  if (0 <= column && column <= world.cols) && (0 <= row && row <= world.rows)
-    // On calcule la position de la fourmi
-    pos = ceil([world.rows - row, column]);
-    // On crée la nouvelle fourmi
-    [world, ant] = ants_new_ant(pos, world);
-    ants_update_colormap(world);
-    world = plot_world(world);
+  // Si on fait click
+  if ibut == 0 || ibut == 3 || ibut == -10000
+    // Si la position est dans la figure, on continue
+    if (0 <= column && column <= world.cols) && (0 <= row && row <= world.rows)
+      global Win;
+      // On calcule la position de la fourmi
+      pos = ceil([world.rows - row, column]);
+      // On crée la nouvelle fourmi
+      [world, ant] = ants_new_ant(pos, world);
+      // On actualise la valeur du formulaire
+      ants_plugin_form_update(world);
+      // On actualise la figure
+      Win.fig.immediate_drawing = "off";
+      ants_update_colormap(world);
+      world = plot_world(world);
+      Win.fig.immediate_drawing = "on";
+    end
   end
 endfunction
 
