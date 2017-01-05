@@ -40,7 +40,6 @@ function parent = gol_plugin_form(parent, world)
   btns = []
   for k = 1:size(struct_names, 1)
     name = struct_names(k);
-    disp(name)
     // Structure de code commun pour tous les boutons des structures
     btns(name) = uicontrol(parent, "style","pushbutton", ...
       'constraints', createConstraints("gridbag", [1 k 1 1], [1 1], 'horizontal', 'upper', [0 0], [200 30]));
@@ -49,7 +48,7 @@ function parent = gol_plugin_form(parent, world)
     btns(name).BackgroundColor = [.95 .95 .95];
     btns(name).Callback = "gol_place_structure_callback";
     btns(name).Callback_Type = 10;
-    btns(name).Tag = "btn_"+name;
+    btns(name).Tag = "gol_btn_"+name;
   end
 
 endfunction
@@ -59,7 +58,7 @@ function gol_event_handler(win, column, row, ibut)
     return;
   end
   global world;
-  [column, row]=xchange(column, row,'i2f');
+  [column, row] = xchange(column, row,'i2f');
 
   column = column - 0.5;
   row    = row - 0.5;
@@ -93,12 +92,13 @@ function gol_place_structure_callback()
   end
 
   global world;
-  [ibut,column,row,win] = xclick();
+  seteventhandler('');
+  [ibut,column,row] = xclick();
+  seteventhandler('gol_event_handler');
   // On calcule les vrais valeurs du click
   row = ceil(world.rows - (row - 0.5));
   column = ceil(column - 0.5);
 
-  disp([column, row]);
   world = gol_place_structure(world, structure, column, row);
   world = plot_world(world);
 
@@ -107,6 +107,16 @@ endfunction
 // This function returns all existent structures
 function structures = gol_get_structures()
   structures = [];
+  // SPACESHIPS
+  structures.glider = [0 1 0;
+                       0 0 1;
+                       1 1 1];
+
+  structures.lwss = [1 0 0 1 0;
+                     0 0 0 0 1;
+                     1 0 0 0 1;
+                     0 1 1 1 1];
+  // OSCILATEURS
   structures.blinker = [1 1 1];
 
   structures.toad = [0 1 1 1;
@@ -116,6 +126,52 @@ function structures = gol_get_structures()
                        1 0 0 0;
                        0 0 0 1;
                        0 0 1 1];
+
+  structures.pulsar = [0 0 0 0 1 0 0 0 0 0 1 0 0 0 0;
+                       0 0 0 0 1 0 0 0 0 0 1 0 0 0 0;
+                       0 0 0 0 1 1 0 0 0 1 1 0 0 0 0;
+                       0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+                       1 1 1 0 0 1 1 0 1 1 0 0 1 1 1;
+                       0 0 1 0 1 0 1 0 1 0 1 0 1 0 0;
+                       0 0 0 0 1 1 0 0 0 1 1 0 0 0 0;
+                       0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+                       0 0 0 0 1 1 0 0 0 1 1 0 0 0 0;
+                       0 0 1 0 1 0 1 0 1 0 1 0 1 0 0;
+                       1 1 1 0 0 1 1 0 1 1 0 0 1 1 1;
+                       0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+                       0 0 0 0 1 1 0 0 0 1 1 0 0 0 0;
+                       0 0 0 0 1 0 0 0 0 0 1 0 0 0 0;
+                       0 0 0 0 1 0 0 0 0 0 1 0 0 0 0];
+
+  structures.column = [1 1 1;
+                       0 1 0;
+                       0 1 0;
+                       1 1 1;
+                       0 0 0;
+                       1 1 1;
+                       1 1 1;
+                       0 0 0;
+                       1 1 1;
+                       0 1 0;
+                       0 1 0;
+                       1 1 1];
+  // FIXES
+  structures.block = [1 1;
+                      1 1]
+
+  structures.boat = [1 1 0;
+                     1 0 1;
+                     0 1 0];
+
+  structures.beehive = [0 1 1 0;
+                        1 0 0 1;
+                        0 1 1 0];
+
+  structures.loaf = [0 1 1 0;
+                     1 0 0 1;
+                     0 1 0 1;
+                     0 0 1 0];
+
 endfunction
 
 // This function returns an structure given its name
@@ -149,7 +205,6 @@ function padded_array = gol_zero_padarray(array, aR, aD, varargin)
     error("Expect at least three arguments");
   end
 
-
   tmp = [repmat(zeros(size(array, 1), 1), 1, aL), array, repmat(zeros(size(array, 1), 1), 1, aR)];
   padded_array = [repmat(zeros(1, size(tmp, 2)), aU, 1); tmp; repmat(zeros(1, size(tmp, 2)), aD, 1)];
 
@@ -165,3 +220,22 @@ function world = gol_place_structure(world, structure, column, row)
   world.data = world.data + padded_struct;
 endfunction
 
+function gol_plugin_form_state(world)
+  global context;
+
+  structures = gol_get_structures();
+  struct_names = fieldnames(structures);
+
+  for k = 1:size(struct_names, 1)
+    btn_tag = 'gol_btn_' + string(struct_names(k));
+    gol_struct_btn = findobj('tag', btn_tag);
+
+    if world.state == 0 //STOPED
+      gol_struct_btn.Enable = 'on';
+    elseif world.state == 1 // RUNNING
+      gol_struct_btn.Enable = 'off';
+    elseif world.state == -1 // UNSET
+      gol_struct_btn.Enable = 'off';
+    end
+  end
+endfunction
