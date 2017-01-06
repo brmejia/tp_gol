@@ -25,9 +25,9 @@ function world = gol_plugin_main(world)
   //Règle 2. Les cellules vivantes avec deux ou trois cellules voisines restent vivants
   m_rule2 = (C == 2).*world.data;
   //Règle 3: Les celulles vivantes avec moins de 2 ou plus de 3 cellules voisines seront mortes au suivant état.
-  m_rule3 = (2 < C || C < 3);
-
-  world.data = (m_rule1 + m_rule2) .* m_rule3;
+  // m_rule3 = ~(C < 2 || C > 3);
+  // Cette règle est implicite dans les règles 1 et 2
+  world.data = (m_rule1 + m_rule2);
 endfunction
 
 function parent = gol_plugin_form(parent, world)
