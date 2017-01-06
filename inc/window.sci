@@ -148,7 +148,7 @@ function speed_input_callback()
   global world;
   this = gcbo;
   new_speed = strtod(this.string);
-  if ~isnum(this.string) | new_speed < 0
+  if ~isnum(this.string) | new_speed < 0 | new_speed > world.default_max_speed
     new_speed = world.default_speed;
   end
   this.string = string(new_speed);

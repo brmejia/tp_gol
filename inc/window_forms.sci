@@ -73,7 +73,7 @@ function Win = win_left_frame_form(Win)
   // Speed input Label
   lb_input_speed = uicontrol(frame_left, "style","text", ...
     'constraints', createConstraints("gridbag", [1 4 2 1], [1 row_h], 'none', 'lower', [0 0], [0.5*max_w label_height]));
-  lb_input_speed.String = [_('Delay')+' (ms)'];
+  lb_input_speed.String = _('Delay')+' ( <= ' + string(world.default_max_speed)+'ms)';
   lb_input_speed.BackgroundColor = [1 1 1];
 
   // Speed input
